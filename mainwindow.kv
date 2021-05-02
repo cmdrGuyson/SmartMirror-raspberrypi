@@ -1,0 +1,162 @@
+WindowManager:
+    IdleWindow:
+    MainWindow:
+    
+
+<IdleWindow>:
+    name: "idle"
+
+    Label:
+        text: "idle screen"
+
+<NewsRow>:
+    orientation: "vertical"
+    title: "News Title"
+    description: "News Description"
+#    size_hint: None, None
+#    height: self.minimum_height
+#    canvas:
+#        Color:
+#            rgba: 0.5, 0.5, 0.5, 1
+#        Rectangle:
+#            size: self.size
+#            pos: self.pos
+
+
+    Label:
+        id: news_row_title
+        text: root.title
+        font_size: "20sp"
+        size_hint_y: None
+        bold: True
+        height: self.texture_size[1]
+        text_size: self.width, None
+
+    Label:
+        id: news_row_description
+        text: root.description
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+#        canvas:
+#            Color:
+#                rgba: 0.5, 0.5, 0.5, 1
+#            Rectangle:
+#                size: self.size
+#                pos: self.pos
+
+
+<RV>:
+    viewclass: "NewsRow"
+
+    RecycleBoxLayout:
+        padding: 30, 30, 80, 0
+        default_size_hint: 1, None
+        orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
+        spacing: 20
+
+
+<MainWindow>:
+    name: "main"
+    date: date
+    time: time
+    weather_icon: weather_icon
+    weather_type: weather_type
+    temperature: temperature
+    greeting: greeting
+
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1, 0.2
+
+            BoxLayout:
+                size_hint_x: 0.3
+                orientation: "vertical"
+                padding: 30, 5
+
+                Label:
+                    text: "Friday, 28th January"
+                    id: date
+                    size_hint: 1, 0.4
+                    font_size: "20sp"
+                    valign: "bottom"
+                    halign: "left"
+                    text_size: self.size
+                Label:
+                    text: "08:28"
+                    id: time
+                    font_size: "100sp"
+                    size_hint: 1, 0.6
+                    text_size: self.size
+                    valign: "middle"
+                    halign: "left"
+
+            Label:
+                size_hint_x: 0.4
+                id: greeting
+                font_size: "35sp"
+                text: "Greeting"
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_x: 0.3
+
+                AsyncImage:
+                    id: weather_icon
+                    source: "images/Rain.gif"
+                    text: "Weather Icon"
+                    allow_stretch: True
+                    anim_delay: 1/20
+                    keep_ratio: True
+                    width: self.parent.width
+                    height: self.parent.width/self.image_ratio
+                    size_hint_x: 0.3
+
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_x: 0.7
+                    padding: 30, 5
+
+                    Label:
+                        id:weather_type
+                        text:"Scattered Clouds"
+                        font_size: "20sp"
+                        text_size: self.size
+                        valign: "bottom"
+                        halign: "left"
+                        size_hint_y: 0.3
+
+                    Label:
+                        id: temperature
+                        text: "28°C"
+                        font_size: "100sp"
+                        text_size: self.size
+                        valign: "top"
+                        halign: "left"
+                        size_hint_y: 0.7
+
+
+
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1, 0.8
+
+
+
+            RV:
+                size_hint_x: 0.3
+                id: "news"
+
+            Label:
+                size_hint_x: 0.4
+                text: "(Emotional Response)"
+
+            Label:
+                size_hint_x: 0.3
+                text: "(Schedule data)"
