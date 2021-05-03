@@ -10,6 +10,11 @@ from utils import StringUtils
 from kivy.uix.screenmanager import ScreenManager, Screen
 import datetime
 from datetime import date
+from imutils.video import VideoStream
+import imutils
+import time
+from requests_toolbelt import MultipartEncoder
+import cv2
 
 # Run app in fullscreen
 Window.fullscreen = "auto"
@@ -35,22 +40,87 @@ weather_api_url = "http://api.openweathermap.org/data/2.5/weather?q=Colombo&appi
 weather = {"main": {"temp": 25.5}, "weather": [{
     "main": "Clouds", "description": "broken clouds"}]}
 
+FACE_IDENTIFICATION_URL = "http://3a33572e5cee.ngrok.io/face-recognition"
+
 LOCAL_TIMEZONE = datetime.datetime.now(
     datetime.timezone.utc).astimezone().tzinfo
 
 
 class IdleWindow(Screen):
-    def __init__(self, **kwargs):
+    def __init__(self, stream, **kwargs):
         super(IdleWindow, self).__init__(**kwargs)
+        self.stream = stream
+        self.pending_response = False
 
-        self.bool = True
+        self.detector = cv2.CascadeClassifier(
+            cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
-        Clock.schedule_interval(self.change_screen, 5)
+        # Clock.schedule_interval(self.change_screen, 5)
+        # Clock.schedule_interval(self.detect_face, 1)
 
-    def change_screen(self, t):
-        if self.bool is True:
-            # self.manager.get_screen('main').set_stuff()
-            self.manager.current = "main"
+    def on_pre_enter(self, **kwargs):
+        Clock.schedule_interval(self.detect_face, 1)
+
+    def change_screen(self, user):
+        self.manager.transition.direction = 'up'
+        self.manager.get_screen('main').set_stuff(user)
+        self.manager.current = "main"
+
+    def detect_face(self, t):
+        frame = self.stream.read()
+        frame = imutils.resize(frame, width=500)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        faces = self.detector.detectMultiScale(
+            gray, minSize=(20, 20), scaleFactor=1.5, minNeighbors=5)
+
+        for (x, y, w, h) in faces:
+            print("face detected")
+            # region of interest
+            roi_gray = gray[y:y + h, x:x + w]
+            cv2.imwrite("image.png", roi_gray)
+            if not self.pending_response:
+                self.identify_face(roi_gray)
+            # Clock.unschedule(self.detect_face)
+            # print("Uncheduled")
+
+    def identify_face(self, frame):
+        self.pending_response = True
+        imencoded = cv2.imencode(".jpg", frame)[1]
+        payload = MultipartEncoder(
+            fields={
+                'files[]': (
+                    'image.jpg',
+                    imencoded.tostring(),
+                    "image/jpeg"
+                )
+            }
+        )
+        headers = {
+            'Content-Type': payload.content_type
+        }
+        UrlRequest(
+            FACE_IDENTIFICATION_URL,
+            req_headers=headers,
+            on_success=self.handle_success,
+            on_failure=self.handle_fail,
+            on_error=self.handle_error,
+            req_body=payload
+        )
+
+    def handle_success(self, request, result):
+        print("success ", result)
+        self.change_screen(result["user"])
+        Clock.unschedule(self.detect_face)
+        self.pending_response = False
+
+    def handle_fail(self, request, result):
+        print("fail ", result)
+        self.pending_response = False
+
+    def handle_error(self, request, result):
+        print("error ", result)
+        self.pending_response = False
 
 
 class MainWindow(Screen):
@@ -61,23 +131,52 @@ class MainWindow(Screen):
     temperature = ObjectProperty(None)
     weather_icon = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, stream, **kwargs):
         super(MainWindow, self).__init__(**kwargs)
-
+        self.stream = stream
+        self.detector = cv2.CascadeClassifier(
+            cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
+        self.idle = False
         Clock.schedule_interval(self.update_time, 1)
 
     def on_pre_enter(self, **kwargs):
-        self.greeting.text = "Hello Amal!"
+        Clock.schedule_interval(self.change_screen, 10)
+        Clock.schedule_interval(self.go_idle, 1)
 
-    def set_stuff(self):
-        self.greeting.text = "Hello Chaminda!"
+    def set_stuff(self, user):
+        self.greeting.text = "Hello "+user["firstName"]+"!"
         self.get_weather()
+
+    def change_screen(self, t):
+        if self.idle is True:
+            self.manager.transition.direction = 'down'
+            self.manager.current = "idle"
+            self.idle = False
+            Clock.unschedule(self.change_screen)
+            Clock.unschedule(self.go_idle)
+
+    def go_idle(self, t):
+        frame = self.stream.read()
+        frame = imutils.resize(frame, width=228)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        faces = self.detector.detectMultiScale(
+            gray, minSize=(20, 20), scaleFactor=1.5, minNeighbors=5)
+
+        for (x, y, w, h) in faces:
+            print("face detected")
+            # region of interest
+            roi_gray = gray[y:y + h, x:x + w]
+            cv2.imwrite("image.png", roi_gray)
+            self.idle = False
+
+        if len(faces) == 0:
+            self.idle = True
 
     def get_weather(self):
         # UrlRequest(weather_api_url, on_success=self.update_view,
         #            on_error=self.update_view)
         self.update_view(None, weather)
-        pass
 
     def update_view(self, request, result):
         self.temperature.text = str(result["main"]["temp"]) + "°C"
@@ -128,9 +227,10 @@ class MainWindowApp(App):
     def build(self):
         Loader.loading_image = 'images/loading.gif'
         sm = WindowManager()
-        sm.add_widget(IdleWindow(name='idle'))
-        sm.add_widget(MainWindow(name='main'))
-
+        self.stream = VideoStream(src=0).start()
+        time.sleep(2.0)
+        sm.add_widget(IdleWindow(self.stream, name='idle'))
+        sm.add_widget(MainWindow(self.stream, name='main'))
         return sm
 
 
