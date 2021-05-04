@@ -15,7 +15,7 @@ news_data = [{"title": "Dow Tumbles, But GME Stock Rockets 113%; Bitcoin Surges,
 # NEWS API details
 topic = "tesla"
 news_api_key = os.environ["NEWS_API_KEY"]
-news_api_url = "https://newsapi.org/v2/top-headlines?language=en&category=entertainment&apiKey=d49d3a280bd140d7aa43a04f8dab9424"
+news_api_url = f"https://newsapi.org/v2/top-headlines?language=en&category=entertainment&apiKey={news_api_key}"
 
 
 class News_RV(RecycleView):
