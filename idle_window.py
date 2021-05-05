@@ -1,5 +1,6 @@
 from kivy.network.urlrequest import UrlRequest
 from kivy.clock import Clock
+from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import Screen
 
 import imutils
@@ -11,6 +12,9 @@ FACE_IDENTIFICATION_URL = os.environ["FACE_IDENTIFICATION_URL"]
 
 
 class IdleWindow(Screen):
+    loading = ObjectProperty(None)
+    response_label = ObjectProperty(None)
+
     def __init__(self, stream, **kwargs):
         super(IdleWindow, self).__init__(**kwargs)
         self.stream = stream
@@ -19,11 +23,12 @@ class IdleWindow(Screen):
         self.detector = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
-        # Clock.schedule_interval(self.change_screen, 5)
-        # Clock.schedule_interval(self.detect_face, 1)
-
     def on_pre_enter(self, **kwargs):
+        # Hide loading gif and change label
+        self.loading.opacity = 0
+        self.response_label.text = " "
         Clock.schedule_interval(self.detect_face, 1)
+        pass
 
     def change_screen(self, user):
         self.manager.transition.direction = 'up'
@@ -45,12 +50,18 @@ class IdleWindow(Screen):
             cv2.imwrite("image.png", roi_gray)
             if not self.pending_response:
                 self.identify_face(roi_gray)
-            # Clock.unschedule(self.detect_face)
-            # print("Uncheduled")
 
     def identify_face(self, frame):
+        # Enable loading gif and label
+        self.loading.opacity = 1
+        self.response_label.text = "Identifying who you are!"
+
         self.pending_response = True
+
+        # Encode image to be sent
         imencoded = cv2.imencode(".jpg", frame)[1]
+
+        # Create multipart form data for request
         payload = MultipartEncoder(
             fields={
                 'files[]': (
@@ -73,15 +84,30 @@ class IdleWindow(Screen):
         )
 
     def handle_success(self, request, result):
+        # Hide loading gif and change label
+        self.response_label.text = "Welcome back! Logging you in..."
+
         print("success ", result)
         self.change_screen(result["user"])
         Clock.unschedule(self.detect_face)
         self.pending_response = False
 
     def handle_fail(self, request, result):
-        print("fail ", result)
+
+        # Hide loading gif and change label
+        self.loading.opacity = 0
+        if request._resp_status == 404:
+            self.response_label.text = "I don't think I know you!"
+        else:
+            self.response_label.text = "Something went wrong!"
+
+        print("fail ", request._resp_status)
         self.pending_response = False
 
     def handle_error(self, request, result):
+        # Hide loading gif and change label
+        self.loading.opacity = 0
+        self.response_label.text = "Something went wrong!"
+
         print("error ", result)
         self.pending_response = False

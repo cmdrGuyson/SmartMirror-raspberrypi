@@ -21,7 +21,7 @@ class WindowManager(ScreenManager):
 
 class MainWindowApp(App):
     def build(self):
-        Loader.loading_image = 'images/loading.gif'
+        Loader.loading_image = 'images/loading.zip'
         sm = WindowManager()
         self.stream = VideoStream(src=0).start()
         time.sleep(2.0)

@@ -1,8 +1,37 @@
 <IdleWindow>:
     name: "idle"
+    response_label: response_label
+    loading: loading
 
-    Label:
-        text: "idle screen"
+    BoxLayout:
+        orientation: "vertical"
+        padding: 200, 200, 200, 200
+        
+        BoxLayout:
+            orientation: "horizontal"
+            padding: 400, 0, 400, 0
+
+            Image:
+                size_hint_x: 0.2
+                padding: 2, 2, 2, 2
+                source: "images/icon.png"
+
+            Label:
+                text: "SmartMirror"
+                font_size: "100sp"
+
+        Label:
+            id: response_label
+            text: " "
+            font_size: "30sp"
+
+        Image:
+            id: loading
+            source: "images/idle_loading.zip"
+            text: "Idle Icon"
+            anim_delay: 1/30 
+            opacity: 0
+
 
 <NewsRow>:
     orientation: "vertical"
