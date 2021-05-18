@@ -1,10 +1,12 @@
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.network.urlrequest import UrlRequest
+from kivy.clock import Clock
 
 from utils import StringUtils
 import os
 import json
+import time
 
 # Dummy news data
 news_data = [{"title": "Dow Tumbles, But GME Stock Rockets 113%; Bitcoin Surges, As Elon Musk Updates Twitter Bio",
@@ -35,20 +37,27 @@ class News_RV(RecycleView):
     def get_data(self, token):
         # get news data from RestAPI
         header = {'Authorization': 'Bearer ' + token}
-        UrlRequest(news_api_url, req_headers=header,
+        UrlRequest(self.NEWS_URL, req_headers=header,
                    on_success=self.update_view, on_failure=self.handle_fail, on_error=self.handle_error)
         # self.data = news_data
         pass
 
     def update_view(self, request, result):
-        self.data = StringUtils.format_response(result["articles"])
+        print(result)
+        self.data = result["articles"][:7]
         # self.data = news_data
+        # self.refresh_from_data()
+        Clock.schedule_interval(self.handle_refresh, 1)
+
+    def handle_refresh(self, t):
         self.refresh_from_data()
+        Clock.unschedule(self.handle_refresh)
+        time.sleep(1)
+        self.scroll_y = 0
 
     def handle_fail(self, request, result):
 
-        # Hide loading gif and change label
-        self.loading.opacity = 0
+        # Show error message
         if request._resp_status == 404:
             self.data = [{"title": "You don't seem to have any news subscriptions",
                           "description": "Please subscribe to your favourite news threads from the mobile application"}]
@@ -61,7 +70,7 @@ class News_RV(RecycleView):
     def handle_error(self, request, result):
         self.data = [{"title": "Somthing went wrong!",
                       "description": "We're very sorry! There was an error while retrieving news articles"}]
-        
+
         self.refresh_from_data()
 
 
