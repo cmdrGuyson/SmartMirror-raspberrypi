@@ -25,8 +25,10 @@ class MainWindowApp(App):
         sm = WindowManager()
         self.stream = VideoStream(src=0).start()
         time.sleep(2.0)
+
         sm.add_widget(IdleWindow(self.stream, name='idle'))
         sm.add_widget(MainWindow(self.stream, name='main'))
+
         return sm
 
 

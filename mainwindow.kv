@@ -38,7 +38,7 @@
     title: "News Title"
     description: "News Description"
 #    size_hint: None, None
-#    height: self.minimum_height
+    height: self.minimum_height
 #    canvas:
 #        Color:
 #            rgba: 0.5, 0.5, 0.5, 1
@@ -90,6 +90,7 @@
     weather_type: weather_type
     temperature: temperature
     greeting: greeting
+    news_rv: news_rv
 
     BoxLayout:
         orientation: "vertical"
@@ -168,11 +169,9 @@
             orientation: "horizontal"
             size_hint: 1, 0.8
 
-
-
             News_RV:
                 size_hint_x: 0.3
-                id: "news"
+                id: news_rv
 
             Label:
                 size_hint_x: 0.4
@@ -180,4 +179,4 @@
 
             Label:
                 size_hint_x: 0.3
-                text: "(Schedule data)"
+                text: "(Twitter feeds)"

@@ -22,7 +22,7 @@ UNITS = "metric"
 weather_api_url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={WEATHER_API_KEY}&units={UNITS}"
 
 weather = {"main": {"temp": 25.5}, "weather": [{
-    "main": "Clouds", "description": "broken clouds"}]}
+    "main": "Thunder", "description": "broken clouds"}]}
 
 LOCAL_TIMEZONE = datetime.datetime.now(
     datetime.timezone.utc).astimezone().tzinfo
@@ -35,6 +35,7 @@ class MainWindow(Screen):
     weather_type = ObjectProperty(None)
     temperature = ObjectProperty(None)
     weather_icon = ObjectProperty(None)
+    news_rv = ObjectProperty(None)
 
     def __init__(self, stream, **kwargs):
         super(MainWindow, self).__init__(**kwargs)
@@ -42,15 +43,19 @@ class MainWindow(Screen):
         self.detector = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
         self.idle = False
-        Clock.schedule_interval(self.update_time, 1)
 
     def on_pre_enter(self, **kwargs):
-        Clock.schedule_interval(self.change_screen, 10)
+        Clock.schedule_interval(self.change_screen, 60*5)
         Clock.schedule_interval(self.go_idle, 1)
+        Clock.schedule_interval(self.update_time, 1)
+        pass
 
     def set_stuff(self, user):
         self.greeting.text = "Hello "+user["firstName"]+"!"
         self.get_weather()
+        self.user = user
+        self.token = user["token"]
+        self.get_news()
 
     def change_screen(self, t):
         if self.idle is True:
@@ -59,6 +64,9 @@ class MainWindow(Screen):
             self.idle = False
             Clock.unschedule(self.change_screen)
             Clock.unschedule(self.go_idle)
+
+    def get_news(self):
+        self.news_rv.get_data(self.token)
 
     def go_idle(self, t):
         frame = self.stream.read()
@@ -72,7 +80,6 @@ class MainWindow(Screen):
             print("face detected")
             # region of interest
             roi_gray = gray[y:y + h, x:x + w]
-            cv2.imwrite("image.png", roi_gray)
             self.idle = False
 
         if len(faces) == 0:

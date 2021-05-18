@@ -7,8 +7,9 @@ import imutils
 from requests_toolbelt import MultipartEncoder
 import cv2
 import os
+import time
 
-FACE_IDENTIFICATION_URL = os.environ["FACE_IDENTIFICATION_URL"]
+FACE_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/face-recognition"
 
 
 class IdleWindow(Screen):
@@ -30,9 +31,9 @@ class IdleWindow(Screen):
         Clock.schedule_interval(self.detect_face, 1)
         pass
 
-    def change_screen(self, user):
+    def change_screen(self, data):
         self.manager.transition.direction = 'up'
-        self.manager.get_screen('main').set_stuff(user)
+        self.manager.get_screen('main').set_stuff(data["user"])
         self.manager.current = "main"
 
     def detect_face(self, t):
@@ -52,11 +53,11 @@ class IdleWindow(Screen):
                 self.identify_face(roi_gray)
 
     def identify_face(self, frame):
+        self.pending_response = True
+
         # Enable loading gif and label
         self.loading.opacity = 1
         self.response_label.text = "Identifying who you are!"
-
-        self.pending_response = True
 
         # Encode image to be sent
         imencoded = cv2.imencode(".jpg", frame)[1]
@@ -88,7 +89,7 @@ class IdleWindow(Screen):
         self.response_label.text = "Welcome back! Logging you in..."
 
         print("success ", result)
-        self.change_screen(result["user"])
+        self.change_screen(result)
         Clock.unschedule(self.detect_face)
         self.pending_response = False
 
@@ -101,7 +102,9 @@ class IdleWindow(Screen):
         else:
             self.response_label.text = "Something went wrong!"
 
-        print("fail ", request._resp_status)
+        # Timeout before retrying
+        time.sleep(2)
+
         self.pending_response = False
 
     def handle_error(self, request, result):
@@ -110,4 +113,5 @@ class IdleWindow(Screen):
         self.response_label.text = "Something went wrong!"
 
         print("error ", result)
+
         self.pending_response = False

@@ -3,7 +3,7 @@ class StringUtils:
     @staticmethod
     def format_response(list_input):
         for element in list_input:
-            element["description"] = element["description"].replace("\n", "")
+            element["description"] = element["description"].replace("\n", " ").replace("\r", "")
 
         return list_input
 
