@@ -3,6 +3,7 @@ from kivy.network.urlrequest import UrlRequest
 from kivy.loader import Loader
 from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen
+from requests_toolbelt import MultipartEncoder
 
 import datetime
 from datetime import date
@@ -13,6 +14,8 @@ import os
 
 from utils import StringUtils
 from dotenv import load_dotenv
+
+from emotion_recognizer import EmotionRecognizer
 
 load_dotenv()
 
@@ -36,6 +39,7 @@ class MainWindow(Screen):
     temperature = ObjectProperty(None)
     weather_icon = ObjectProperty(None)
     news_rv = ObjectProperty(None)
+    emotion = ObjectProperty(None)
 
     def __init__(self, stream, **kwargs):
         super(MainWindow, self).__init__(**kwargs)
@@ -43,10 +47,13 @@ class MainWindow(Screen):
         self.detector = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
         self.idle = False
+        self.identifying_emotion = False
+        self.EMOTION_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/emotion"
+        self.emotionRecognizer = EmotionRecognizer()
 
     def on_pre_enter(self, **kwargs):
         Clock.schedule_interval(self.change_screen, 60*5)
-        Clock.schedule_interval(self.go_idle, 1)
+        Clock.schedule_interval(self.monitor_activity, 1)
         Clock.schedule_interval(self.update_time, 1)
         pass
 
@@ -63,12 +70,12 @@ class MainWindow(Screen):
             self.manager.current = "idle"
             self.idle = False
             Clock.unschedule(self.change_screen)
-            Clock.unschedule(self.go_idle)
+            Clock.unschedule(self.monitor_activity)
 
     def get_news(self):
         self.news_rv.get_data(self.token)
 
-    def go_idle(self, t):
+    def monitor_activity(self, t):
         frame = self.stream.read()
         frame = imutils.resize(frame, width=228)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -77,13 +84,62 @@ class MainWindow(Screen):
             gray, minSize=(20, 20), scaleFactor=1.5, minNeighbors=5)
 
         for (x, y, w, h) in faces:
-            print("face detected")
             # region of interest
             roi_gray = gray[y:y + h, x:x + w]
             self.idle = False
+            self.handle_emotion_identification(roi_gray)
 
         if len(faces) == 0:
             self.idle = True
+
+    def handle_emotion_identification(self, frame):
+        self.current_emotion = self.emotionRecognizer.identify_emotion(
+            cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
+        self.emotion.text = self.current_emotion
+
+    def identify_emotion(self, frame):
+        if not self.identifying_emotion:
+            self.identifying_emotion = True
+
+            # Encode image to be sent
+            imencoded = cv2.imencode(".jpg", frame)[1]
+
+            # Create multipart form data for request
+            payload = MultipartEncoder(
+                fields={
+                    'files[]': (
+                        'image.jpg',
+                        imencoded.tostring(),
+                        "image/jpeg"
+                    )
+                }
+            )
+            headers = {
+                'Content-Type': payload.content_type,
+                'Authorization': 'Bearer ' + self.token
+            }
+            UrlRequest(
+                self.EMOTION_IDENTIFICATION_URL,
+                req_headers=headers,
+                on_success=self.handle_success,
+                on_failure=self.handle_fail,
+                on_error=self.handle_error,
+                req_body=payload
+            )
+
+    def handle_success(self, request, result):
+        print("[INFO] Success", result["emotion"])
+        self.current_emotion = result["emotion"]
+        self.identifying_emotion = False
+        self.emotion.text = self.current_emotion
+
+    def handle_fail(self, request, result):
+        print("[INFO] Fail")
+        self.identifying_emotion = False
+
+    def handle_error(self, request, result):
+        print("[INFO] error")
+        self.identifying_emotion = False
 
     def get_weather(self):
         # UrlRequest(weather_api_url, on_success=self.update_view,
