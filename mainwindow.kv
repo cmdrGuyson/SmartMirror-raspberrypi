@@ -174,10 +174,15 @@
                 size_hint_x: 0.3
                 id: news_rv
 
-            Label:
-                id: emotion
+            BoxLayout:
+                orientation: "vertical"
                 size_hint_x: 0.4
-                text: "(Emotional Response)"
+                padding: 300, 600, 300, 100
+
+                Image:
+                    id: emotion
+                    source: "images/neutral.png"
+                    text: "(Emotional Response)"
 
             Label:
                 size_hint_x: 0.3

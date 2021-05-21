@@ -28,7 +28,7 @@ class IdleWindow(Screen):
         # Hide loading gif and change label
         self.loading.opacity = 0
         self.response_label.text = " "
-        Clock.schedule_interval(self.detect_face, 1)
+        Clock.schedule_interval(self.detect_face, 2)
         pass
 
     def change_screen(self, data):
@@ -102,9 +102,6 @@ class IdleWindow(Screen):
         else:
             self.response_label.text = "Something went wrong!"
 
-        # Timeout before retrying
-        time.sleep(2)
-
         self.pending_response = False
 
     def handle_error(self, request, result):
@@ -113,5 +110,4 @@ class IdleWindow(Screen):
         self.response_label.text = "Something went wrong!"
 
         print("error ", result)
-
         self.pending_response = False

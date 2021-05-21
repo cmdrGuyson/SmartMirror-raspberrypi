@@ -95,7 +95,7 @@ class MainWindow(Screen):
     def handle_emotion_identification(self, frame):
         self.current_emotion = self.emotionRecognizer.identify_emotion(
             cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
-        self.emotion.text = self.current_emotion
+        self.emotion.source = "images/"+self.current_emotion+".png"
 
     def identify_emotion(self, frame):
         if not self.identifying_emotion:
@@ -131,7 +131,7 @@ class MainWindow(Screen):
         print("[INFO] Success", result["emotion"])
         self.current_emotion = result["emotion"]
         self.identifying_emotion = False
-        self.emotion.text = self.current_emotion
+        self.emotion.source = "images/"+self.current_emotion+".png"
 
     def handle_fail(self, request, result):
         print("[INFO] Fail")
