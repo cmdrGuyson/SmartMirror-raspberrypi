@@ -32,6 +32,7 @@ LOCAL_TIMEZONE = datetime.datetime.now(
 
 
 class MainWindow(Screen):
+    # References to view attributes
     greeting = ObjectProperty(None)
     date = ObjectProperty(None)
     time = ObjectProperty(None)
@@ -40,30 +41,42 @@ class MainWindow(Screen):
     weather_icon = ObjectProperty(None)
     news_rv = ObjectProperty(None)
     emotion = ObjectProperty(None)
+    events = ObjectProperty(None)
 
     def __init__(self, stream, **kwargs):
         super(MainWindow, self).__init__(**kwargs)
+
+        # Stream, detector, and identifiers
         self.stream = stream
         self.detector = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
-        self.idle = False
-        self.identifying_emotion = False
-        self.EMOTION_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/emotion"
         self.emotionRecognizer = EmotionRecognizer()
 
+        # Booleans
+        self.idle = False
+        self.identifying_emotion = False
+
+        # API endpoints
+        self.EMOTION_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/emotion"
+        self.CALENDAR_EVENTS_URL = f"{os.environ['API_BASE_URL']}/calendar"
+
+    # Setup timed events on enter
     def on_pre_enter(self, **kwargs):
         Clock.schedule_interval(self.change_screen, 60*5)
         Clock.schedule_interval(self.monitor_activity, 1)
         Clock.schedule_interval(self.update_time, 1)
         pass
 
+    # Configure attributes and displays when arriving from idle screen
     def set_stuff(self, user):
         self.greeting.text = "Hello "+user["firstName"]+"!"
         self.get_weather()
         self.user = user
         self.token = user["token"]
         self.get_news()
+        self.get_calendar()
 
+    # Unchedule timed events and logout to idle screen
     def change_screen(self, t):
         if self.idle is True:
             self.manager.transition.direction = 'down'
@@ -72,9 +85,40 @@ class MainWindow(Screen):
             Clock.unschedule(self.change_screen)
             Clock.unschedule(self.monitor_activity)
 
+    # Call method on NewsRV class and get news articles
     def get_news(self):
         self.news_rv.get_data(self.token)
 
+    # Make request to endpoint to get calendar events
+    def get_calendar(self):
+        headers = {
+            'Authorization': 'Bearer ' + self.token
+        }
+        UrlRequest(
+            self.CALENDAR_EVENTS_URL,
+            req_headers=headers,
+            on_success=self.handle_cal_success,
+            on_failure=self.handle_cal_fail,
+            on_error=self.handle_cal_error,
+        )
+
+    # Display calendar events
+    def handle_cal_success(self, request, result):
+        events = result["events"]
+
+        if events is not None:
+            if len(events) > 0:
+                self.events.text = StringUtils.get_event_string(events)
+
+    # Failed request while getting calendar events
+    def handle_cal_fail(self, request, result):
+        self.events.text = "Something went wrong while getting calendar events"
+
+    # Error while getting calendar events
+    def handle_cal_error(self, request, result):
+        self.events.text = "An error occured while getting calendar events"
+
+    # Check if user is still infornt of mirror
     def monitor_activity(self, t):
         frame = self.stream.read()
         frame = imutils.resize(frame, width=228)
@@ -92,10 +136,36 @@ class MainWindow(Screen):
         if len(faces) == 0:
             self.idle = True
 
+    # Identify user emtoion
     def handle_emotion_identification(self, frame):
         self.current_emotion = self.emotionRecognizer.identify_emotion(
             cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
         self.emotion.source = "images/"+self.current_emotion+".png"
+
+    # Call weather endpoint and get weather information
+    def get_weather(self):
+        # UrlRequest(weather_api_url, on_success=self.update_view,
+        #            on_error=self.update_view)
+        self.update_view(None, weather)
+
+    # Update view after successfully getting weather information
+    def update_view(self, request, result):
+        self.temperature.text = str(result["main"]["temp"]) + "°C"
+        self.weather_type.text = result["weather"][0]["description"].title()
+        self.weather_icon.source = "images/" + \
+            result["weather"][0]["main"] + ".gif"
+
+    # Update date time in each second
+    def update_time(self, t):
+        today = date.today()
+        current_time = datetime.datetime.now(LOCAL_TIMEZONE).time()
+        self.time.text = current_time.strftime("%H:%M")
+        self.date.text = today.strftime(
+            "%A, %d" + StringUtils.get_suffix(today) + " of %B")
+
+    '''
+    Methods to be used by lower spec Raspberry Pi device to identify emotion with RESTful API
+    '''
 
     def identify_emotion(self, frame):
         if not self.identifying_emotion:
@@ -128,36 +198,15 @@ class MainWindow(Screen):
             )
 
     def handle_success(self, request, result):
-        print("[INFO] Success", result["emotion"])
+        print("[INFO] Successfully identified emotion", result["emotion"])
         self.current_emotion = result["emotion"]
         self.identifying_emotion = False
         self.emotion.source = "images/"+self.current_emotion+".png"
 
     def handle_fail(self, request, result):
-        print("[INFO] Fail")
+        print("[INFO] Failed while identifying emotion")
         self.identifying_emotion = False
 
     def handle_error(self, request, result):
-        print("[INFO] error")
+        print("[INFO] Error while identifying emotion")
         self.identifying_emotion = False
-
-    def get_weather(self):
-        # UrlRequest(weather_api_url, on_success=self.update_view,
-        #            on_error=self.update_view)
-        self.update_view(None, weather)
-
-    def update_view(self, request, result):
-        self.temperature.text = str(result["main"]["temp"]) + "°C"
-        self.weather_type.text = result["weather"][0]["description"].title()
-        self.weather_icon.source = "images/" + \
-            result["weather"][0]["main"] + ".gif"
-
-    def update_time(self, t):
-        today = date.today()
-        current_time = datetime.datetime.now(LOCAL_TIMEZONE).time()
-        self.time.text = current_time.strftime("%H:%M")
-        self.date.text = today.strftime(
-            "%A, %d" + StringUtils.get_suffix(today) + " of %B")
-
-    def submit(self):
-        print("Title ", self.greeting.text)

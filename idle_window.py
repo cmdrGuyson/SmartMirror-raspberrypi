@@ -24,6 +24,7 @@ class IdleWindow(Screen):
         self.detector = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
+    # Change display properties and schedule events on enter
     def on_pre_enter(self, **kwargs):
         # Hide loading gif and change label
         self.loading.opacity = 0
@@ -31,11 +32,13 @@ class IdleWindow(Screen):
         Clock.schedule_interval(self.detect_face, 2)
         pass
 
+    # Change screen to main after successfully recognizing face
     def change_screen(self, data):
         self.manager.transition.direction = 'up'
         self.manager.get_screen('main').set_stuff(data["user"])
         self.manager.current = "main"
 
+    # Detect if a face is present
     def detect_face(self, t):
         frame = self.stream.read()
         frame = imutils.resize(frame, width=500)
@@ -52,6 +55,7 @@ class IdleWindow(Screen):
             if not self.pending_response:
                 self.identify_face(roi_gray)
 
+    # Identify given face through RESTful API
     def identify_face(self, frame):
         self.pending_response = True
 
@@ -84,6 +88,7 @@ class IdleWindow(Screen):
             req_body=payload
         )
 
+    # Log user in after successfully identifying face
     def handle_success(self, request, result):
         # Hide loading gif and change label
         self.response_label.text = "Welcome back! Logging you in..."
@@ -93,6 +98,7 @@ class IdleWindow(Screen):
         Clock.unschedule(self.detect_face)
         self.pending_response = False
 
+    # Unsuccessful attempt at identifying face
     def handle_fail(self, request, result):
 
         # Hide loading gif and change label
@@ -104,6 +110,7 @@ class IdleWindow(Screen):
 
         self.pending_response = False
 
+    # Error on identifying face
     def handle_error(self, request, result):
         # Hide loading gif and change label
         self.loading.opacity = 0

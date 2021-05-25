@@ -43,7 +43,6 @@ class News_RV(RecycleView):
         pass
 
     def update_view(self, request, result):
-        print(result)
         self.data = result["articles"][:7]
         # self.data = news_data
         # self.refresh_from_data()

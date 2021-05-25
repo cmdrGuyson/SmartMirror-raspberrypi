@@ -37,14 +37,7 @@
     orientation: "vertical"
     title: "News Title"
     description: "News Description"
-#    size_hint: None, None
     height: self.minimum_height
-#    canvas:
-#        Color:
-#            rgba: 0.5, 0.5, 0.5, 1
-#        Rectangle:
-#            size: self.size
-#            pos: self.pos
 
 
     Label:
@@ -62,12 +55,6 @@
         size_hint_y: None
         height: self.texture_size[1]
         text_size: self.width, None
-#        canvas:
-#            Color:
-#                rgba: 0.5, 0.5, 0.5, 1
-#            Rectangle:
-#                size: self.size
-#                pos: self.pos
 
 
 <News_RV>:
@@ -92,6 +79,7 @@
     greeting: greeting
     news_rv: news_rv
     emotion: emotion
+    events: events
 
     BoxLayout:
         orientation: "vertical"
@@ -177,12 +165,34 @@
             BoxLayout:
                 orientation: "vertical"
                 size_hint_x: 0.4
-                padding: 300, 600, 300, 100
+                padding: 0, 20, 0, 50
 
                 Image:
                     id: emotion
                     source: "images/neutral.png"
                     text: "(Emotional Response)"
+                    size_hint_y: 0.2
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: 0.6
+
+                BoxLayout:
+                    orientation: "vertical"
+                    padding: 300, 300, 300, 0
+
+                    Image:
+                        source: "images/calendar.png"
+                        text: "Calendar"
+                        size_hint_y: 0.4
+
+                    Label:
+                        id: events
+                        text: "You don't have any calendar events for today"
+                        font_size: "20sp"
+                        size_hint_y: 0.6
+                        markup: "True"
+                        halign: "center"
 
             Label:
                 size_hint_x: 0.3
