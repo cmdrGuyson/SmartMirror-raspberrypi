@@ -122,9 +122,8 @@
 
                 AsyncImage:
                     id: weather_icon
-                    source: "images/Rain.gif"
-                    text: "Weather Icon"
                     allow_stretch: True
+                    source: "images/black.png"
                     anim_delay: 1/20
                     keep_ratio: True
                     width: self.parent.width
@@ -138,7 +137,7 @@
 
                     Label:
                         id:weather_type
-                        text:"Scattered Clouds"
+                        text:"Getting weather details"
                         font_size: "20sp"
                         text_size: self.size
                         valign: "bottom"
@@ -147,7 +146,7 @@
 
                     Label:
                         id: temperature
-                        text: "28°C"
+                        text: ""
                         font_size: "100sp"
                         text_size: self.size
                         valign: "top"

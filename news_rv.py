@@ -51,7 +51,6 @@ class News_RV(RecycleView):
     def handle_refresh(self, t):
         self.refresh_from_data()
         Clock.unschedule(self.handle_refresh)
-        time.sleep(1)
         self.scroll_y = 0
 
     def handle_fail(self, request, result):

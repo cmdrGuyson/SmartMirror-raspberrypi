@@ -22,7 +22,7 @@ load_dotenv()
 CITY = "Colombo"
 WEATHER_API_KEY = os.environ["WEATHER_API_KEY"]
 UNITS = "metric"
-weather_api_url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={WEATHER_API_KEY}&units={UNITS}"
+
 
 weather = {"main": {"temp": 25.5}, "weather": [{
     "main": "Thunder", "description": "broken clouds"}]}
@@ -70,11 +70,21 @@ class MainWindow(Screen):
     # Configure attributes and displays when arriving from idle screen
     def set_stuff(self, user):
         self.greeting.text = "Hello "+user["firstName"]+"!"
-        self.get_weather()
         self.user = user
         self.token = user["token"]
+
+        # Get news and calendar events
         self.get_news()
         self.get_calendar()
+
+        # If user has configured location get weather information
+        if "locationId" in user:
+            self.city = user["locationId"]
+            self.WEATHER_API_URL = f"http://api.openweathermap.org/data/2.5/weather?id={self.city}&appid={WEATHER_API_KEY}&units={UNITS}"
+            self.get_weather()
+        else:
+            self.weather_type.font_size = "16sp"
+            self.weather_type.text = "Please configure location for weather"
 
     # Unchedule timed events and logout to idle screen
     def change_screen(self, t):
@@ -144,16 +154,24 @@ class MainWindow(Screen):
 
     # Call weather endpoint and get weather information
     def get_weather(self):
-        # UrlRequest(weather_api_url, on_success=self.update_view,
-        #            on_error=self.update_view)
-        self.update_view(None, weather)
+        UrlRequest(self.WEATHER_API_URL, on_success=self.handle_weather_success,
+                   on_error=self.handle_weather_error, on_failure=self.handle_weather_fail)
+        # self.handle_weather_success(None, weather)
 
     # Update view after successfully getting weather information
-    def update_view(self, request, result):
-        self.temperature.text = str(result["main"]["temp"]) + "°C"
+    def handle_weather_success(self, request, result):
+        self.temperature.text = str(round(result["main"]["temp"], 1)) + "°C"
         self.weather_type.text = result["weather"][0]["description"].title()
         self.weather_icon.source = "images/" + \
             result["weather"][0]["main"] + ".gif"
+
+    # Failed request while getting weather information
+    def handle_weather_fail(self, request, response):
+        self.weather_type.text = "Something went wrong!"
+
+    # Error while getting weather information
+    def handle_weather_error(self, request, response):
+        self.weather_type.text = "Error while getting weather!"
 
     # Update date time in each second
     def update_time(self, t):
