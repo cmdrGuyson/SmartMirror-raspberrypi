@@ -5,6 +5,7 @@ from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen
 from requests_toolbelt import MultipartEncoder
 
+from statistics import mode
 import datetime
 from datetime import date
 import imutils
@@ -40,6 +41,7 @@ class MainWindow(Screen):
     temperature = ObjectProperty(None)
     weather_icon = ObjectProperty(None)
     news_rv = ObjectProperty(None)
+    tweets_rv = ObjectProperty(None)
     emotion = ObjectProperty(None)
     events = ObjectProperty(None)
 
@@ -56,6 +58,9 @@ class MainWindow(Screen):
         self.idle = False
         self.identifying_emotion = False
 
+        # Array to store emotional changes
+        self.emotions = []
+
         # API endpoints
         self.EMOTION_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/emotion"
         self.CALENDAR_EVENTS_URL = f"{os.environ['API_BASE_URL']}/calendar"
@@ -65,6 +70,7 @@ class MainWindow(Screen):
         Clock.schedule_interval(self.change_screen, 60*5)
         Clock.schedule_interval(self.monitor_activity, 1)
         Clock.schedule_interval(self.update_time, 1)
+        Clock.schedule_once(self.initial_tweet_request, 10)
         pass
 
     # Configure attributes and displays when arriving from idle screen
@@ -150,7 +156,23 @@ class MainWindow(Screen):
     def handle_emotion_identification(self, frame):
         self.current_emotion = self.emotionRecognizer.identify_emotion(
             cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
+        self.emotions.append(self.current_emotion)
         self.emotion.source = "images/"+self.current_emotion+".png"
+
+    # Retrieve tweets on user emotion
+    def retrive_tweets(self):
+        if len(self.emotions) > 0:
+            prominent_emotion = mode(self.emotions)
+            self.tweets_rv.get_data(self.token, prominent_emotion)
+    
+    # Scheduled event for initial emotion classification and tweet request
+    def initial_tweet_request(self, t):
+
+        # Get tweets on prominent emotion
+        self.retrive_tweets()
+
+        # Schedule event for 5 min intervals
+        Clock.schedule_interval(self.initial_tweet_request, 5*60)
 
     # Call weather endpoint and get weather information
     def get_weather(self):

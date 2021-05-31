@@ -56,6 +56,29 @@
         height: self.texture_size[1]
         text_size: self.width, None
 
+<TweetRow>:
+    orientation: "vertical"
+    origin: "Tweeter"
+    tweet: "Tweet body"
+    height: self.minimum_height
+
+
+    Label:
+        id: tweet_row_title
+        text: root.origin
+        font_size: "20sp"
+        size_hint_y: None
+        bold: True
+        height: self.texture_size[1]
+        text_size: self.width, None
+
+    Label:
+        id: tweet_row_description
+        text: root.tweet
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+
 
 <News_RV>:
     viewclass: "NewsRow"
@@ -68,6 +91,16 @@
         height: self.minimum_height
         spacing: 20
 
+<Tweets_RV>:
+    viewclass: "TweetRow"
+
+    RecycleBoxLayout:
+        padding: 30, 30, 80, 0
+        default_size_hint: 1, None
+        orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
+        spacing: 20
 
 <MainWindow>:
     name: "main"
@@ -78,6 +111,7 @@
     temperature: temperature
     greeting: greeting
     news_rv: news_rv
+    tweets_rv: tweets_rv
     emotion: emotion
     events: events
 
@@ -193,6 +227,6 @@
                         markup: "True"
                         halign: "center"
 
-            Label:
+            Tweets_RV:
                 size_hint_x: 0.3
-                text: "(Twitter feeds)"
+                id: tweets_rv

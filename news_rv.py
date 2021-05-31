@@ -8,14 +8,6 @@ import os
 import json
 import time
 
-# Dummy news data
-news_data = [{"title": "Dow Tumbles, But GME Stock Rockets 113%; Bitcoin Surges, As Elon Musk Updates Twitter Bio",
-              "description": "The Dow Jones Industrial Average dived 400 points Friday, as the price of Bitcoin "
-                             "surged 15% on Tesla CEO Elon Musk's Twitter bio change. GME stock soared."},
-             {"title": "SoftBank's Son expects mass production of driverless cars in two years - Reuters",
-              "description": "SoftBank Group Corp Chief Executive Masayoshi Son said on Friday he expects mass "
-                             "production of self-driving vehicles to start in two years."}]
-
 with open('dummy_news.json') as f:
     data = json.load(f)
 
@@ -43,19 +35,21 @@ class News_RV(RecycleView):
         pass
 
     def update_view(self, request, result):
-        self.data = result["articles"][:7]
-        # self.data = news_data
-        # self.refresh_from_data()
-        Clock.schedule_interval(self.handle_refresh, 1)
+        # Update view after getting data
+        if result["articles"] is not None:
+            self.data = result["articles"][:6]
+            # self.data = news_data
+            # self.refresh_from_data()
+            Clock.schedule_once(self.handle_refresh, 1)
 
     def handle_refresh(self, t):
+        # Refresh the recycle view
         self.refresh_from_data()
-        Clock.unschedule(self.handle_refresh)
         self.scroll_y = 0
 
     def handle_fail(self, request, result):
 
-        # Show error message
+        # Show error messages
         if request._resp_status == 404:
             self.data = [{"title": "You don't seem to have any news subscriptions",
                           "description": "Please subscribe to your favourite news threads from the mobile application"}]
@@ -66,7 +60,7 @@ class News_RV(RecycleView):
         self.refresh_from_data()
 
     def handle_error(self, request, result):
-        self.data = [{"title": "Somthing went wrong!",
+        self.data = [{"title": "Something went wrong!",
                       "description": "We're very sorry! There was an error while retrieving news articles"}]
 
         self.refresh_from_data()
