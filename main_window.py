@@ -28,9 +28,6 @@ UNITS = "metric"
 weather = {"main": {"temp": 25.5}, "weather": [{
     "main": "Thunder", "description": "broken clouds"}]}
 
-LOCAL_TIMEZONE = datetime.datetime.now(
-    datetime.timezone.utc).astimezone().tzinfo
-
 
 class MainWindow(Screen):
     # References to view attributes
@@ -64,6 +61,11 @@ class MainWindow(Screen):
         # API endpoints
         self.EMOTION_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/emotion"
         self.CALENDAR_EVENTS_URL = f"{os.environ['API_BASE_URL']}/calendar"
+        self.REFRESH_JWT_URL = f"{os.environ['API_BASE_URL']}/auth"
+
+        # Timezone
+        self.LOCAL_TIMEZONE = datetime.datetime.now(
+            datetime.timezone.utc).astimezone().tzinfo
 
     # Setup timed events on enter
     def on_pre_enter(self, **kwargs):
@@ -71,13 +73,15 @@ class MainWindow(Screen):
         Clock.schedule_interval(self.monitor_activity, 1)
         Clock.schedule_interval(self.update_time, 1)
         Clock.schedule_once(self.initial_tweet_request, 10)
+        Clock.schedule_interval(self.refresh_jwt, 50*60)
         pass
 
     # Configure attributes and displays when arriving from idle screen
-    def set_stuff(self, user):
+    def configure_screen(self, user):
         self.greeting.text = "Hello "+user["firstName"]+"!"
         self.user = user
         self.token = user["token"]
+        self.refresh_token = user["refreshToken"]
 
         # Get news and calendar events
         self.get_news()
@@ -85,21 +89,60 @@ class MainWindow(Screen):
 
         # If user has configured location get weather information
         if "locationId" in user:
-            self.city = user["locationId"]
-            self.WEATHER_API_URL = f"http://api.openweathermap.org/data/2.5/weather?id={self.city}&appid={WEATHER_API_KEY}&units={UNITS}"
-            self.get_weather()
+            if user["locationId"] != -1:
+                self.city = user["locationId"]
+                self.WEATHER_API_URL = f"http://api.openweathermap.org/data/2.5/weather?id={self.city}&appid={WEATHER_API_KEY}&units={UNITS}"
+                self.get_weather()
+            else:
+                self.weather_type.font_size = "16sp"
+                self.weather_type.text = "Please configure location for weather"
         else:
             self.weather_type.font_size = "16sp"
             self.weather_type.text = "Please configure location for weather"
 
-    # Unchedule timed events and logout to idle screen
-    def change_screen(self, t):
+    # Refresh the JWT token every 50 minutes before expiry
+    def refresh_jwt(self, t):
+        if self.token is not None:
+            headers = {
+                'Authorization': 'Bearer ' + self.refresh_token
+            }
+            UrlRequest(
+                self.REFRESH_JWT_URL,
+                req_headers=headers,
+                on_success=self.handle_refresh_success,
+                on_failure=self.handle_refresh_fail,
+                on_error=self.handle_refresh_fail,
+            )
+
+    # On successful result set new jwt token
+    def handle_refresh_success(self, request, result):
+        if "token" in result:
+            self.token = result["token"]
+
+    # On unsuccessful result when refreshing token logout user
+    def handle_refresh_fail(self, request, result):
+        print("[INFO] Something went wrong while refreshing token")
+        self.change_screen()
+
+    # If not idling unchedule timed events and logout to idle screen
+    def check_idle(self, t):
         if self.idle is True:
-            self.manager.transition.direction = 'down'
-            self.manager.current = "idle"
-            self.idle = False
+            self.change_screen()
+
+    # Handle changing screens
+    def change_screen(self):
+        try:
+            # Unschedule events
             Clock.unschedule(self.change_screen)
+            Clock.unschedule(self.retrieve_tweets)
             Clock.unschedule(self.monitor_activity)
+            Clock.unschedule(self.refresh_jwt)
+        except Exception as e:
+            print("[INFO] Error unscheduling events ", e)
+
+        self.manager.transition.direction = 'down'
+        self.manager.current = "idle"
+        self.idle = False
 
     # Call method on NewsRV class and get news articles
     def get_news(self):
@@ -160,16 +203,16 @@ class MainWindow(Screen):
         self.emotion.source = "images/"+self.current_emotion+".png"
 
     # Retrieve tweets on user emotion
-    def retrive_tweets(self):
+    def retrieve_tweets(self):
         if len(self.emotions) > 0:
             prominent_emotion = mode(self.emotions)
             self.tweets_rv.get_data(self.token, prominent_emotion)
-    
+
     # Scheduled event for initial emotion classification and tweet request
     def initial_tweet_request(self, t):
 
         # Get tweets on prominent emotion
-        self.retrive_tweets()
+        self.retrieve_tweets()
 
         # Schedule event for 5 min intervals
         Clock.schedule_interval(self.initial_tweet_request, 5*60)
@@ -198,7 +241,7 @@ class MainWindow(Screen):
     # Update date time in each second
     def update_time(self, t):
         today = date.today()
-        current_time = datetime.datetime.now(LOCAL_TIMEZONE).time()
+        current_time = datetime.datetime.now(self.LOCAL_TIMEZONE).time()
         self.time.text = current_time.strftime("%H:%M")
         self.date.text = today.strftime(
             "%A, %d" + StringUtils.get_suffix(today) + " of %B")

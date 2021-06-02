@@ -7,6 +7,10 @@ class StringUtils:
             element["description"] = element["description"].replace(
                 "\n", " ").replace("\r", "")
 
+            # Reduce charachter count to fit screen
+            if len(element["description"]) > 200:
+                element["description"] = element["description"][:195]+"..."
+
         return list_input
 
     @staticmethod

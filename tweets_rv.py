@@ -44,17 +44,17 @@ class Tweets_RV(RecycleView):
 
         # Show error message
         if request._resp_status == 404:
-            self.data = [{"title": "You don't seem to have any twitter subscriptions for current emotion",
-                          "description": "Please subscribe to your favourite twitter feeds from the mobile application"}]
+            self.data = [{"origin": "You don't seem to have any twitter subscriptions for current emotion",
+                          "tweet": "Please subscribe to your favourite twitter feeds from the mobile application"}]
         else:
-            self.data = [{"title": "There was an error",
-                          "description": "We're very sorry! There was an error while retrieving tweets"}]
+            self.data = [{"origin": "There was an error",
+                          "tweet": "We're very sorry! There was an error while retrieving tweets"}]
 
         self.refresh_from_data()
 
     def handle_error(self, request, result):
-        self.data = [{"title": "Something went wrong!",
-                      "description": "We're very sorry! There was an error while retrieving tweets"}]
+        self.data = [{"origin": "Something went wrong!",
+                      "tweet": "We're very sorry! There was an error while retrieving tweets"}]
 
         self.refresh_from_data()
 

@@ -37,7 +37,7 @@ class News_RV(RecycleView):
     def update_view(self, request, result):
         # Update view after getting data
         if result["articles"] is not None:
-            self.data = result["articles"][:6]
+            self.data = StringUtils.format_response(result["articles"][:6])
             # self.data = news_data
             # self.refresh_from_data()
             Clock.schedule_once(self.handle_refresh, 1)

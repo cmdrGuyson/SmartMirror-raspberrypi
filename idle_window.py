@@ -35,7 +35,7 @@ class IdleWindow(Screen):
     # Change screen to main after successfully recognizing face
     def change_screen(self, data):
         self.manager.transition.direction = 'up'
-        self.manager.get_screen('main').set_stuff(data["user"])
+        self.manager.get_screen('main').configure_screen(data["user"])
         self.manager.current = "main"
 
     # Detect if a face is present
