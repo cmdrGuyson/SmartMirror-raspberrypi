@@ -9,13 +9,15 @@ import os
 import json
 import time
 
+from env import API_BASE_URL
+
 
 class Tweets_RV(RecycleView):
     def __init__(self, **kwargs):
         super(Tweets_RV, self).__init__(**kwargs)
         self.data = [{"origin": "I'm figuring out your emotion...",
                       "tweet": "Please wait while your emotion is calculated. This may take a little time"}]
-        self.TWEETS_URL = f"{os.environ['API_BASE_URL']}/tweets"
+        self.TWEETS_URL = f"{API_BASE_URL}/tweets"
 
     def get_data(self, token, emotion):
         # get tweets for current emotion from RestAPI

@@ -8,15 +8,11 @@ import os
 import json
 import time
 
+from env import API_BASE_URL
+
 with open('dummy_news.json') as f:
     data = json.load(f)
-
 news_data = data["articles"]
-
-# NEWS API details
-topic = "tesla"
-news_api_key = os.environ["NEWS_API_KEY"]
-news_api_url = f"https://newsapi.org/v2/top-headlines?language=en&category=entertainment&apiKey={news_api_key}"
 
 
 class News_RV(RecycleView):
@@ -24,7 +20,7 @@ class News_RV(RecycleView):
         super(News_RV, self).__init__(**kwargs)
         self.data = [{"title": "Retrieving articles...", "description": "Please wait while your news articles are "
                                                                         "retrieved"}]
-        self.NEWS_URL = f"{os.environ['API_BASE_URL']}/news"
+        self.NEWS_URL = f"{API_BASE_URL}/news"
 
     def get_data(self, token):
         # get news data from RestAPI

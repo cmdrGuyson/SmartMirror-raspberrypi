@@ -1,3 +1,7 @@
+import itertools
+import operator
+
+
 class StringUtils:
 
     @staticmethod
@@ -37,3 +41,23 @@ class StringUtils:
 
         # Remove final \n and return string
         return string[:-1]
+
+    @staticmethod
+    def string_mode(list_input):
+        # Get sorted iterable
+        sorted_list = sorted((x, i) for i, x in enumerate(list_input))
+
+        groups = itertools.groupby(sorted_list, key=operator.itemgetter(0))
+
+        # auxiliary function to get "quality" for an item
+        def _auxfun(g):
+            item, iterable = g
+            count = 0
+            min_index = len(list_input)
+            for _, where in iterable:
+                count += 1
+                min_index = min(min_index, where)
+            return count, -min_index
+
+        # pick the highest-count/earliest item
+        return max(groups, key=_auxfun)[0]

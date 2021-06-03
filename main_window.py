@@ -5,7 +5,6 @@ from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen
 from requests_toolbelt import MultipartEncoder
 
-from statistics import mode
 import datetime
 from datetime import date
 import imutils
@@ -14,14 +13,9 @@ import cv2
 import os
 
 from utils import StringUtils
-from dotenv import load_dotenv
-
 from emotion_recognizer import EmotionRecognizer
+from env import API_BASE_URL, WEATHER_API_KEY
 
-load_dotenv()
-
-CITY = "Colombo"
-WEATHER_API_KEY = os.environ["WEATHER_API_KEY"]
 UNITS = "metric"
 
 
@@ -59,9 +53,9 @@ class MainWindow(Screen):
         self.emotions = []
 
         # API endpoints
-        self.EMOTION_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/emotion"
-        self.CALENDAR_EVENTS_URL = f"{os.environ['API_BASE_URL']}/calendar"
-        self.REFRESH_JWT_URL = f"{os.environ['API_BASE_URL']}/auth"
+        self.EMOTION_IDENTIFICATION_URL = f"{API_BASE_URL}/emotion"
+        self.CALENDAR_EVENTS_URL = f"{API_BASE_URL}/calendar"
+        self.REFRESH_JWT_URL = f"{API_BASE_URL}/auth"
 
         # Timezone
         self.LOCAL_TIMEZONE = datetime.datetime.now(
@@ -205,7 +199,7 @@ class MainWindow(Screen):
     # Retrieve tweets on user emotion
     def retrieve_tweets(self):
         if len(self.emotions) > 0:
-            prominent_emotion = mode(self.emotions)
+            prominent_emotion = StringUtils.string_mode(self.emotions)
             self.tweets_rv.get_data(self.token, prominent_emotion)
 
     # Scheduled event for initial emotion classification and tweet request

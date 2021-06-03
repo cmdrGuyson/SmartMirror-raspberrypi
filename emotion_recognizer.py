@@ -2,9 +2,13 @@ import cv2.cv2 as cv2
 import numpy as np
 import os
 from tensorflow.keras.models import load_model
+import tensorflow as tf
+
+print(tf.__version__)
+
 
 # Location of model
-model_location = '{0}\\models\\model.h5'.format(
+model_location = '{0}/models/model.h5'.format(
     os.path.dirname(os.path.realpath(__file__)))
 
 model = load_model(model_location)

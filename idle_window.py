@@ -9,7 +9,7 @@ import cv2
 import os
 import time
 
-FACE_IDENTIFICATION_URL = f"{os.environ['API_BASE_URL']}/face-recognition"
+from env import API_BASE_URL
 
 
 class IdleWindow(Screen):
@@ -23,6 +23,8 @@ class IdleWindow(Screen):
 
         self.detector = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
+
+        self.FACE_IDENTIFICATION_URL = f"{API_BASE_URL}/face-recognition"
 
     # Change display properties and schedule events on enter
     def on_pre_enter(self, **kwargs):
@@ -80,7 +82,7 @@ class IdleWindow(Screen):
             'Content-Type': payload.content_type
         }
         UrlRequest(
-            FACE_IDENTIFICATION_URL,
+            self.FACE_IDENTIFICATION_URL,
             req_headers=headers,
             on_success=self.handle_success,
             on_failure=self.handle_fail,

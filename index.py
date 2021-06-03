@@ -24,7 +24,13 @@ class MainWindowApp(App):
     def build(self):
         Loader.loading_image = 'images/loading.zip'
         sm = WindowManager()
+
+        # Video stream
         self.stream = VideoStream(src=0).start()
+
+        # Video stream for Raspberry pi
+        # self.stream = VideoStream(usePiCamera=True).start()
+
         time.sleep(2.0)
 
         sm.add_widget(IdleWindow(self.stream, name='idle'))
