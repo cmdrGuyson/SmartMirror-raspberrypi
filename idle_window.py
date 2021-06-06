@@ -42,6 +42,7 @@ class IdleWindow(Screen):
 
     # Detect if a face is present
     def detect_face(self, t):
+        print("detecting")
         frame = self.stream.read()
         frame = imutils.resize(frame, width=500)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -49,35 +50,42 @@ class IdleWindow(Screen):
         faces = self.detector.detectMultiScale(
             gray, minSize=(20, 20), scaleFactor=1.5, minNeighbors=5)
 
+        extracted_faces = []
+
         for (x, y, w, h) in faces:
             print("face detected")
             # region of interest
             roi_gray = gray[y:y + h, x:x + w]
             cv2.imwrite("image.png", roi_gray)
-            if not self.pending_response:
-                self.identify_face(roi_gray)
+            # Add face to list of faces
+            extracted_faces.append(roi_gray)
+
+        if not self.pending_response and len(extracted_faces) > 0:
+            self.identify_face(extracted_faces)
 
     # Identify given face through RESTful API
-    def identify_face(self, frame):
+    def identify_face(self, faces):
         self.pending_response = True
 
         # Enable loading gif and label
         self.loading.opacity = 1
         self.response_label.text = "Identifying who you are!"
 
-        # Encode image to be sent
-        imencoded = cv2.imencode(".jpg", frame)[1]
+        # Encode images to be sent
+        imencoded = []
+        for face in faces:
+            imencoded.append(cv2.imencode(".jpg", face)[1])
+
+        # Get list of fields
+        fields = []
+        for encoded in imencoded:
+            fields.append(
+                ('files[]', ('image.jpg', encoded.tostring(), "image/jpeg")))
+
+        print(fields)
 
         # Create multipart form data for request
-        payload = MultipartEncoder(
-            fields={
-                'files[]': (
-                    'image.jpg',
-                    imencoded.tostring(),
-                    "image/jpeg"
-                )
-            }
-        )
+        payload = MultipartEncoder(fields=fields)
         headers = {
             'Content-Type': payload.content_type
         }
