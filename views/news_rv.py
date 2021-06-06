@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.network.urlrequest import UrlRequest
 from kivy.clock import Clock
 
-from utils import StringUtils
+from utils.utils import StringUtils
 import os
 import json
 import time

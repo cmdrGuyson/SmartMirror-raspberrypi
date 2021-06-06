@@ -60,6 +60,8 @@ class IdleWindow(Screen):
             # Add face to list of faces
             extracted_faces.append(roi_gray)
 
+        # If not pending an identification response from the RESTAPI and faces are detected
+        # send image to RESTAPI for identification
         if not self.pending_response and len(extracted_faces) > 0:
             self.identify_face(extracted_faces)
 
@@ -81,8 +83,6 @@ class IdleWindow(Screen):
         for encoded in imencoded:
             fields.append(
                 ('files[]', ('image.jpg', encoded.tostring(), "image/jpeg")))
-
-        print(fields)
 
         # Create multipart form data for request
         payload = MultipartEncoder(fields=fields)

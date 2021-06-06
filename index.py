@@ -7,10 +7,10 @@ from imutils.video import VideoStream
 import time
 
 # Import Views and Screens
-from main_window import MainWindow
-from news_rv import News_RV, NewsRow
-from idle_window import IdleWindow
-from tweets_rv import Tweets_RV
+from screens.main_window import MainWindow
+from views.news_rv import News_RV, NewsRow
+from screens.idle_window import IdleWindow
+from views.tweets_rv import Tweets_RV
 
 # Run app in fullscreen
 Window.fullscreen = "auto"

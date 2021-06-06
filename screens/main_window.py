@@ -12,8 +12,8 @@ import time
 import cv2
 import os
 
-from utils import StringUtils
-from emotion_recognizer import EmotionRecognizer
+from utils.utils import StringUtils
+from recognizers.emotion_recognizer import EmotionRecognizer
 from env import API_BASE_URL, WEATHER_API_KEY
 
 UNITS = "metric"
@@ -189,18 +189,32 @@ class MainWindow(Screen):
         if len(faces) == 0:
             self.idle = True
 
-    # Identify user emtoion
+    # Identify user emotion in given face image frame
     def handle_emotion_identification(self, frame):
+
+        # Identify current emotion using model
         self.current_emotion = self.emotionRecognizer.identify_emotion(
             cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
+
+        # Add current emotion to list
         self.emotions.append(self.current_emotion)
+
+        # Change emotion icon
         self.emotion.source = "images/"+self.current_emotion+".png"
 
     # Retrieve tweets on user emotion
     def retrieve_tweets(self):
+        # If recorded emotions are present
         if len(self.emotions) > 0:
+
+            # Get most prominent emotion
             prominent_emotion = StringUtils.string_mode(self.emotions)
+
+            # Get tweets based on prominent emotion
             self.tweets_rv.get_data(self.token, prominent_emotion)
+
+            # Reset list
+            self.emotions = []
 
     # Scheduled event for initial emotion classification and tweet request
     def initial_tweet_request(self, t):
