@@ -1,0 +1,7 @@
+API_BASE_URL = "http://18b436d68769.ngrok.io"
+user_1 = "alvaro@email.com"
+user_2 = "arnold@email.com"
+user_3 = "george@email.com"
+user_4 = "jennifer@email.com"
+user_5 = "tiger@email.com"
+PASSWORD = "password"
