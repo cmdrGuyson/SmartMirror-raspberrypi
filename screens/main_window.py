@@ -85,12 +85,21 @@ class MainWindow(Screen):
         if "locationId" in user:
             if user["locationId"] != -1:
                 self.city = user["locationId"]
+
+                # Edit URL according to location
                 self.WEATHER_API_URL = f"http://api.openweathermap.org/data/2.5/weather?id={self.city}&appid={WEATHER_API_KEY}&units={UNITS}"
+
+                # Make API call to get weather info
                 self.get_weather()
+
+                # Schedule getting weather information in periods of 5 minutes
+                Clock.schedule_interval(self.get_weather, 60*5)
             else:
+                # If user hasn't configured location
                 self.weather_type.font_size = "16sp"
                 self.weather_type.text = "Please configure location for weather"
         else:
+            # If user hasn't configured location
             self.weather_type.font_size = "16sp"
             self.weather_type.text = "Please configure location for weather"
 
@@ -131,6 +140,7 @@ class MainWindow(Screen):
             Clock.unschedule(self.retrieve_tweets)
             Clock.unschedule(self.monitor_activity)
             Clock.unschedule(self.refresh_jwt)
+            Clock.unschedule(self.get_weather)
         except Exception as e:
             print("[INFO] Error unscheduling events ", e)
 
@@ -226,7 +236,7 @@ class MainWindow(Screen):
         Clock.schedule_interval(self.initial_tweet_request, 5*60)
 
     # Call weather endpoint and get weather information
-    def get_weather(self):
+    def get_weather(self, t=None):
         UrlRequest(self.WEATHER_API_URL, on_success=self.handle_weather_success,
                    on_error=self.handle_weather_error, on_failure=self.handle_weather_fail)
         # self.handle_weather_success(None, weather)

@@ -33,10 +33,11 @@ class Tweets_RV(RecycleView):
             # tweets = [{"origin": tweet["origin"], "tweet": tweet["tweet"]} for tweet in result["tweets"]]
             # self.data = ListProperty(tweets)
 
-            self.data = result["tweets"][:8]
+            data = StringUtils.format_tweet(result["tweets"][:7])
+            self.data = data
             # self.data = news_data
-            self.refresh_from_data()
-            # Clock.schedule_once(self.handle_refresh, 1)
+            # self.refresh_from_data()
+            Clock.schedule_once(self.handle_refresh, 1)
 
     def handle_refresh(self, t):
         self.refresh_from_data()

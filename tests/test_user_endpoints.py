@@ -7,6 +7,8 @@ from tests.config import user_1, PASSWORD
 
 '''
 Run tests using $ python -m unittest discover -v tests
+
+or $ python -m unittest tests.test_user_endpoints
 '''
 
 # BASE URL ENDPOINT
@@ -33,12 +35,14 @@ class TestUserEndpoints(unittest.TestCase):
         response = requests.post(BASIC_AUTH_URL, json=body)
         self.assertTrue(response.ok)
         result = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(result["token"])
         self.assertIsNotNone(result["refreshToken"])
 
     def test_refresh_jwt(self):
         response = requests.get(BASIC_AUTH_URL, headers=self.refresh_headers)
         result = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(result["token"])
 
     def test_reject_invalid_refresh_token(self):
@@ -48,6 +52,7 @@ class TestUserEndpoints(unittest.TestCase):
     def test_get_user_data(self):
         response = requests.get(GET_USER_URL, headers=self.headers)
         result = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(result["user"])
         self.assertEqual(result["user"]["email"], user_1)
 

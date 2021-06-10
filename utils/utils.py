@@ -18,6 +18,19 @@ class StringUtils:
         return list_input
 
     @staticmethod
+    def format_tweet(list_input):
+        # Format news articles to be displayed
+        for element in list_input:
+            element["tweet"] = element["tweet"].replace(
+                "\n", " ").replace("\r", "")
+
+            # Reduce charachter count to fit screen
+            if len(element["tweet"]) > 200:
+                element["tweet"] = element["tweet"][:195]+"..."
+
+        return list_input
+
+    @staticmethod
     def get_suffix(date):
         # Get suffix for date to be displayed
         day = date.day

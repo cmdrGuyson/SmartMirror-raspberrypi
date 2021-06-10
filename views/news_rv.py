@@ -10,10 +10,6 @@ import time
 
 from env import API_BASE_URL
 
-with open('dummy_news.json') as f:
-    data = json.load(f)
-news_data = data["articles"]
-
 
 class News_RV(RecycleView):
     def __init__(self, **kwargs):

@@ -1,4 +1,4 @@
-API_BASE_URL = "http://18b436d68769.ngrok.io"
+API_BASE_URL = "http://fce05577b146.ngrok.io"
 user_1 = "alvaro@email.com"
 user_2 = "arnold@email.com"
 user_3 = "george@email.com"
