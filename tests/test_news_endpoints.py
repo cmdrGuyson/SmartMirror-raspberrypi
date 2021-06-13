@@ -6,7 +6,7 @@ import tests.config as config
 from tests.config import user_2, user_3, PASSWORD
 
 '''
-Run tests using $ python -m unittest discover -v tests
+Run tests using $ python -m unittest tests.test_news_endpoints -v
 '''
 
 # BASE URL ENDPOINT

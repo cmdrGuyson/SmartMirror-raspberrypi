@@ -7,7 +7,7 @@ import tests.config as config
 from tests.config import user_1, PASSWORD
 
 '''
-Run tests using $ python -m unittest discover -v tests
+Run tests using $ python -m unittest tests.test_emotion_endpoints -v
 '''
 
 # BASE URL ENDPOINT

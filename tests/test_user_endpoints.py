@@ -6,9 +6,7 @@ import tests.config as config
 from tests.config import user_1, PASSWORD
 
 '''
-Run tests using $ python -m unittest discover -v tests
-
-or $ python -m unittest tests.test_user_endpoints
+Run tests using $ python -m unittest tests.test_user_endpoints -v
 '''
 
 # BASE URL ENDPOINT
@@ -59,3 +57,4 @@ class TestUserEndpoints(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    output.print_table()
