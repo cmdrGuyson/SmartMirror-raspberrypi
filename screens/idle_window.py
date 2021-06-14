@@ -42,7 +42,6 @@ class IdleWindow(Screen):
 
     # Detect if a face is present
     def detect_face(self, t):
-        print("detecting")
         frame = self.stream.read()
         frame = imutils.resize(frame, width=500)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -53,7 +52,6 @@ class IdleWindow(Screen):
         extracted_faces = []
 
         for (x, y, w, h) in faces:
-            print("face detected")
             # region of interest
             roi_gray = gray[y:y + h, x:x + w]
             cv2.imwrite("image.png", roi_gray)

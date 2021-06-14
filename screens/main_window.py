@@ -63,10 +63,10 @@ class MainWindow(Screen):
 
     # Setup timed events on enter
     def on_pre_enter(self, **kwargs):
-        Clock.schedule_interval(self.change_screen, 60*5)
+        Clock.schedule_interval(self.change_screen, 30)
         Clock.schedule_interval(self.monitor_activity, 1)
         Clock.schedule_interval(self.update_time, 1)
-        Clock.schedule_once(self.initial_tweet_request, 10)
+        Clock.schedule_interval(self.initial_tweet_request, 10)
         Clock.schedule_interval(self.refresh_jwt, 50*60)
         pass
 
@@ -133,7 +133,7 @@ class MainWindow(Screen):
             self.change_screen()
 
     # Handle changing screens
-    def change_screen(self):
+    def change_screen(self, t=None):
         try:
             # Unschedule events
             Clock.unschedule(self.change_screen)
@@ -141,8 +141,21 @@ class MainWindow(Screen):
             Clock.unschedule(self.monitor_activity)
             Clock.unschedule(self.refresh_jwt)
             Clock.unschedule(self.get_weather)
+            Clock.unschedule(self.initial_tweet_request)
         except Exception as e:
             print("[INFO] Error unscheduling events ", e)
+
+        # Reset views
+        self.events.text = "You don't have any calendar events for today"
+        self.weather_type.text = "Getting weather details"
+        self.weather_icon.source = "images/black.png"
+        self.temperature.text = ""
+        self.news_rv.data = [{"title": "Retrieving articles...", "description": "Please wait while your news articles are "
+                              "retrieved"}]
+        self.news_rv.refresh_from_data()
+        self.tweets_rv.data = [{"origin": "I'm figuring out your emotion...",
+                                "tweet": "Please wait while your emotion is calculated. This may take a little time"}]
+        self.tweets_rv.refresh_from_data()
 
         self.manager.transition.direction = 'down'
         self.manager.current = "idle"
@@ -214,26 +227,28 @@ class MainWindow(Screen):
 
     # Retrieve tweets on user emotion
     def retrieve_tweets(self):
-        # If recorded emotions are present
-        if len(self.emotions) > 0:
 
-            # Get most prominent emotion
-            prominent_emotion = StringUtils.string_mode(self.emotions)
+        # Get most prominent emotion
+        prominent_emotion = StringUtils.string_mode(self.emotions)
 
-            # Get tweets based on prominent emotion
-            self.tweets_rv.get_data(self.token, prominent_emotion)
+        # Get tweets based on prominent emotion
+        self.tweets_rv.get_data(self.token, prominent_emotion)
 
-            # Reset list
-            self.emotions = []
+        # Reset list
+        self.emotions = []
 
     # Scheduled event for initial emotion classification and tweet request
     def initial_tweet_request(self, t):
 
-        # Get tweets on prominent emotion
-        self.retrieve_tweets()
+        # If recorded emotions are present
+        if len(self.emotions) > 0:
 
-        # Schedule event for 5 min intervals
-        Clock.schedule_interval(self.initial_tweet_request, 5*60)
+            # Get tweets on prominent emotion
+            self.retrieve_tweets()
+
+            # Unchedule current event and Schedule event for 5 min intervals
+            Clock.unschedule(self.initial_tweet_request)
+            Clock.schedule_interval(self.initial_tweet_request, 5*60)
 
     # Call weather endpoint and get weather information
     def get_weather(self, t=None):
