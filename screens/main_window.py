@@ -63,7 +63,7 @@ class MainWindow(Screen):
 
     # Setup timed events on enter
     def on_pre_enter(self, **kwargs):
-        Clock.schedule_interval(self.change_screen, 30)
+        Clock.schedule_interval(self.change_screen, 5*60)
         Clock.schedule_interval(self.monitor_activity, 1)
         Clock.schedule_interval(self.update_time, 1)
         Clock.schedule_interval(self.initial_tweet_request, 10)

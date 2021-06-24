@@ -100,8 +100,6 @@ class IdleWindow(Screen):
     def handle_success(self, request, result):
         # Hide loading gif and change label
         self.response_label.text = "Welcome back! Logging you in..."
-
-        print("success ", result)
         self.change_screen(result)
         Clock.unschedule(self.detect_face)
         self.pending_response = False
