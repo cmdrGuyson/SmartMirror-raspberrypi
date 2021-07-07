@@ -1,6 +1,6 @@
 
 
-<img src="logo.png" width="500">
+<img src="logo.png" align="center" width="800">
 
 
 # Problem
@@ -32,7 +32,7 @@ The android application also communicates with the REST API to setup facial
 recognition, update user interests, etc.
 User authentications is done by utilizing Firebase Authentication services. This ensures maximum security in the system.
 
-<img src="flow.png">
+<img src="flow.png" align="center">
 
 <br /><br />
 
@@ -64,6 +64,7 @@ Two convolutional neural networks were trained as follows
 <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" />
 <img src="https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black"/>
 <img src="https://img.shields.io/badge/RASPBERRY%20PI-C51A4A.svg?&style=for-the-badge&logo=raspberry%20pi&logoColor=white" /> 
+<img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white" />
 <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
 
 <br />
