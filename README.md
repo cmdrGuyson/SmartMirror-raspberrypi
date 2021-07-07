@@ -45,7 +45,6 @@ User authentications is done by utilizing Firebase Authentication services. This
 - SmartMirror RESTful API respository - `Not available publicly`
 
 <br />
-<br />
 
 # Convolutional Neural Networks
 Two convolutional neural networks were trained as follows
@@ -54,7 +53,6 @@ Two convolutional neural networks were trained as follows
 
 - Facial Expression Recognition CNN - 23 layer CNN model trained to accurately perform facial expression recognition in embedded devices.
 
-<br />
 <br />
 
 # Technologies Used
@@ -67,8 +65,6 @@ Two convolutional neural networks were trained as follows
 <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white" />
 <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
 
-<br />
-<br />
 <br />
 
 # Future Enhancements
