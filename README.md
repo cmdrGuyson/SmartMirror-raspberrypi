@@ -76,4 +76,4 @@ Two convolutional neural networks were trained as follows
 
 - Streamline face recognition process
 
-- Train emotion recognition CNN to identify additional emotions
+- Improve emotion recognition CNN to identify additional emotions
