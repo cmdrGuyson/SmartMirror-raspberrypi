@@ -72,7 +72,7 @@ Two convolutional neural networks were trained as follows
 
 # Future Enhancements
 
-- Integration with music straming services
+- Integration with music streaming services
 
 - Streamline face recognition process
 
