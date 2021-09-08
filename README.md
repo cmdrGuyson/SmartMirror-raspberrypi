@@ -1,4 +1,4 @@
-
+`All rights for the source code and other related material are reserved`
 
 <img src="logo.png" align="center" width="800">
 
